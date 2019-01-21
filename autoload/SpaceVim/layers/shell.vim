@@ -37,10 +37,19 @@ let s:file = expand('<sfile>:~')
 let s:lnum = expand('<slnum>') + 2
 function! SpaceVim#layers#shell#config() abort
   call SpaceVim#mapping#space#def('nnoremap', ["'"], 'call call('
-        \ . string(function('s:open_default_shell')) . ', [])',
+        \ . string(function('s:open_default_shell')) . ', [0])',
         \ ['open shell',
         \ [
         \ "[SPC '] is to open or jump to default shell window",
+        \ '',
+        \ 'Definition: ' . s:file . ':' . s:lnum,
+        \ ]
+        \ ], 1)
+  call SpaceVim#mapping#space#def('nnoremap', ["\""], 'call call('
+        \ . string(function('s:open_default_shell')) . ', [1])',
+        \ ["open shell in current file's path",
+        \ [
+        \ "[SPC \"] is to open or jump to default shell window with the current file's pwd",
         \ '',
         \ 'Definition: ' . s:file . ':' . s:lnum,
         \ ]
@@ -118,7 +127,11 @@ endfunction
 let s:shell_win_nr = -1
 let s:term_buf_nr = -1
 " shell windows shoud be toggleable, and can be hide.
-function! s:open_default_shell() abort
+function! s:open_default_shell(preserve_pwd) abort
+  if a:preserve_pwd
+    call SpaceVim#plugins#projectmanager#disable_project_router()
+    lcd %:p:h
+  endif
   if s:shell_win_nr != 0 && getwinvar(s:shell_win_nr, '&buftype') ==# 'terminal' && &buftype !=# 'terminal'
     exe s:shell_win_nr .  'wincmd w'
     " fuck gvim bug, startinsert do not work in gvim
@@ -206,6 +219,9 @@ function! s:open_default_shell() abort
   elseif s:default_shell ==# 'VimShell'
     VimShell
     imap <buffer> <C-d> exit<esc><Plug>(vimshell_enter)
+  endif
+  if a:preserve_pwd
+    call SpaceVim#plugins#projectmanager#enable_project_router()
   endif
 endfunction
 

@@ -131,12 +131,22 @@ function! SpaceVim#plugins#projectmanager#kill_project() abort
 
 endfunction
 
-if g:spacevim_project_rooter_automatically
+function! SpaceVim#plugins#projectmanager#enable_project_router() abort
   augroup spacevim_project_rooter
     autocmd!
     autocmd VimEnter,BufEnter * call SpaceVim#plugins#projectmanager#current_root()
     autocmd BufWritePost * :call setbufvar('%', 'rootDir', '') | call SpaceVim#plugins#projectmanager#current_root()
   augroup END
+endfunction
+
+function! SpaceVim#plugins#projectmanager#disable_project_router() abort
+  augroup spacevim_project_rooter
+    autocmd!
+  augroup END
+endfunction
+
+if g:spacevim_project_rooter_automatically
+  call SpaceVim#plugins#projectmanager#enable_project_router()
 endif
 function! s:find_root_directory() abort
   let fd = expand('%:p')
